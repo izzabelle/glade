@@ -1,21 +1,44 @@
 #![no_std]
 #![no_main]
-
-// modules
-mod vga;
+#![feature(custom_test_frameworks)]
+#![test_runner(glade::test_runner)]
+#![reexport_test_harness_main = "test_main"]
 
 // namespacing
 use core::panic::PanicInfo;
+use glade::{print, println};
+#[cfg(test)]
+use glade::{sprint, sprintln};
 
 // entry point
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("hello world!");
+    println!("gladeOS");
+
+    #[cfg(test)]
+    test_main();
+
     loop {}
 }
 
 // panic handler
+#[cfg(not(test))]
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
     loop {}
+}
+
+// test panic handler
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    glade::test_panic_handler(info);
+}
+
+#[test_case]
+fn trivial_assertion() {
+    sprint!("trivial_assertion... ");
+    assert_eq!(1, 1);
+    sprintln!("[Ok!]");
 }

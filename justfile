@@ -1,8 +1,11 @@
 build:
-	cargo xb
+	cargo xbuild
 
 run:
-	cargo xr
+	cargo xrun
 
 loc:
 	tokei
+
+test:
+	cargo xtest

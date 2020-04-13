@@ -141,3 +141,32 @@ macro_rules! println {
     () => (print!("\n"));
     ($($arg:tt)*) => (print!("{}\n", format_args!($($arg)*)));
 }
+
+#[cfg(test)]
+use crate::{sprint, sprintln};
+
+#[test_case]
+fn test_println_simple() {
+    sprint!("test_println_simple... ");
+    println!("test_println_simple output");
+    sprintln!("[Ok!]");
+}
+
+#[test_case]
+fn test_println_many() {
+    sprint!("test_println_many... ");
+    (0..200).for_each(|_| println!("test_println_many output"));
+    sprintln!("[Ok!]");
+}
+
+#[test_case]
+fn test_println_output() {
+    sprint!("test_println_output... ");
+    let s = "some test string";
+    println!("{}", s);
+    s.chars().enumerate().for_each(|(i, c)| {
+        let vga_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(vga_char.ascii_char), c);
+    });
+    sprintln!("[Ok!]");
+}
