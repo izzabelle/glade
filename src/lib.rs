@@ -3,45 +3,22 @@
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
+#![feature(abi_x86_interrupt)]
 
+// modules
+pub mod interrupts;
 pub mod serial;
 pub mod vga;
 
+// namespacing
 use core::panic::PanicInfo;
 
-pub fn test_runner(tests: &[&dyn Fn()]) {
-    sprintln!("Running {} tests", tests.len());
-    tests.iter().for_each(|test| test());
-    exit_qemu(QemuExitCode::Success);
+/// initialize the kernel
+pub fn init() {
+    interrupts::init_idt();
 }
 
-pub fn test_panic_handler(info: &PanicInfo) -> ! {
-    sprintln!("[Err]\n");
-    sprintln!("what: {}\n", info);
-    exit_qemu(QemuExitCode::Failed);
-    loop {}
-}
-
-#[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    test_main();
-    loop {}
-}
-
-#[cfg(test)]
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    test_panic_handler(info)
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
-pub enum QemuExitCode {
-    Success = 0x10,
-    Failed = 0x11,
-}
-
+/// exit qemu with given code
 pub fn exit_qemu(exit_code: QemuExitCode) {
     use x86_64::instructions::port::Port;
 
@@ -49,4 +26,43 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
         let mut port = Port::new(0xf4);
         port.write(exit_code as u32);
     }
+}
+
+// test entry point
+#[cfg(test)]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    init();
+    test_main();
+    loop {}
+}
+
+// test panic handler
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    test_panic_handler(info)
+}
+
+/// qemu exit code enum
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u32)]
+pub enum QemuExitCode {
+    Success = 0x10,
+    Failed = 0x11,
+}
+
+// test harness
+pub fn test_runner(tests: &[&dyn Fn()]) {
+    sprintln!("Running {} tests", tests.len());
+    tests.iter().for_each(|test| test());
+    exit_qemu(QemuExitCode::Success);
+}
+
+// test panic handler internals
+pub fn test_panic_handler(info: &PanicInfo) -> ! {
+    sprintln!("[Err]\n");
+    sprintln!("what: {}\n", info);
+    exit_qemu(QemuExitCode::Failed);
+    loop {}
 }

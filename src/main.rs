@@ -7,12 +7,14 @@
 // namespacing
 use core::panic::PanicInfo;
 use glade::{print, println};
+
 #[cfg(test)]
 use glade::{sprint, sprintln};
 
 // entry point
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    glade::init();
     println!("gladeOS");
 
     #[cfg(test)]
@@ -36,6 +38,7 @@ fn panic(info: &PanicInfo) -> ! {
     glade::test_panic_handler(info);
 }
 
+// just to make sure it's running ok
 #[test_case]
 fn trivial_assertion() {
     sprint!("trivial_assertion... ");
