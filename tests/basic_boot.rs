@@ -10,7 +10,7 @@ use glade::{print, println, sprint, sprintln};
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     test_main();
-    loop {}
+    glade::hlt_loop();
 }
 
 #[panic_handler]

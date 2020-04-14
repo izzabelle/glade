@@ -6,6 +6,7 @@
 #![feature(abi_x86_interrupt)]
 
 // modules
+pub mod gdt;
 pub mod interrupts;
 pub mod serial;
 pub mod vga;
@@ -16,6 +17,9 @@ use core::panic::PanicInfo;
 /// initialize the kernel
 pub fn init() {
     interrupts::init_idt();
+    gdt::init();
+    unsafe { interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
 }
 
 /// exit qemu with given code
@@ -28,13 +32,19 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     }
 }
 
+pub fn hlt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
+}
+
 // test entry point
 #[cfg(test)]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init();
     test_main();
-    loop {}
+    hlt_loop();
 }
 
 // test panic handler
@@ -64,5 +74,5 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     sprintln!("[Err]\n");
     sprintln!("what: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-    loop {}
+    hlt_loop();
 }

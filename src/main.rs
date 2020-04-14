@@ -20,7 +20,7 @@ pub extern "C" fn _start() -> ! {
     #[cfg(test)]
     test_main();
 
-    loop {}
+    glade::hlt_loop();
 }
 
 // panic handler
@@ -28,7 +28,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    glade::hlt_loop();
 }
 
 // test panic handler

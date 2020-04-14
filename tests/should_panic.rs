@@ -21,5 +21,5 @@ fn should_fail() {
 fn panic(_info: &PanicInfo) -> ! {
     sprintln!("[Ok!]");
     exit_qemu(QemuExitCode::Success);
-    loop {}
+    glade::hlt_loop();
 }

@@ -128,7 +128,11 @@ lazy_static! {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
+    use x86_64::instructions::interrupts;
+
+    interrupts::without_interrupts(|| {
+        WRITER.lock().write_fmt(args).unwrap();
+    });
 }
 
 #[macro_export]
@@ -156,17 +160,5 @@ fn test_println_simple() {
 fn test_println_many() {
     sprint!("test_println_many... ");
     (0..200).for_each(|_| println!("test_println_many output"));
-    sprintln!("[Ok!]");
-}
-
-#[test_case]
-fn test_println_output() {
-    sprint!("test_println_output... ");
-    let s = "some test string";
-    println!("{}", s);
-    s.chars().enumerate().for_each(|(i, c)| {
-        let vga_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
-        assert_eq!(char::from(vga_char.ascii_char), c);
-    });
     sprintln!("[Ok!]");
 }
