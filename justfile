@@ -9,3 +9,9 @@ loc:
 
 test:
 	cargo xtest
+
+status:
+	git status
+
+lazy-add:
+	git add -A

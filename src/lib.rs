@@ -32,6 +32,7 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     }
 }
 
+/// hlt while looping to reduce CPU usage
 pub fn hlt_loop() -> ! {
     loop {
         x86_64::instructions::hlt();
