@@ -4,8 +4,13 @@
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 #![feature(abi_x86_interrupt)]
+#![feature(alloc_error_handler)]
+
+// alloc
+extern crate alloc;
 
 // modules
+pub mod allocator;
 pub mod gdt;
 pub mod interrupts;
 pub mod memory;
@@ -81,4 +86,9 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     sprintln!("what: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
     hlt_loop();
+}
+
+#[alloc_error_handler]
+fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
+    panic!("allocation error:: {:?}", layout)
 }
