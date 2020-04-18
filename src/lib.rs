@@ -8,11 +8,15 @@
 // modules
 pub mod gdt;
 pub mod interrupts;
+pub mod memory;
 pub mod serial;
 pub mod vga;
 
 // namespacing
 use core::panic::PanicInfo;
+
+#[cfg(test)]
+use bootloader::{entry_point, BootInfo};
 
 /// initialize the kernel
 pub fn init() {
@@ -41,8 +45,9 @@ pub fn hlt_loop() -> ! {
 
 // test entry point
 #[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+entry_point!(test_kmain);
+#[cfg(test)]
+fn test_kmain(_boot_info: &'static BootInfo) -> ! {
     init();
     test_main();
     hlt_loop();

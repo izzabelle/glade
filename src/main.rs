@@ -5,6 +5,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 // namespacing
+use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 use glade::{print, println};
 
@@ -12,14 +13,18 @@ use glade::{print, println};
 use glade::{sprint, sprintln};
 
 // entry point
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+entry_point!(kmain);
+fn kmain(boot_info: &'static BootInfo) -> ! {
     glade::init();
     println!("gladeOS");
+
+    use glade::memory::BootInfoFrameAllocator;
+    let mut frame_allocaor = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
 
     #[cfg(test)]
     test_main();
 
+    println!("still running");
     glade::hlt_loop();
 }
 
